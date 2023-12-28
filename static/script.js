@@ -1,3 +1,7 @@
+// This file contains the JavaScript for the login page.
+// Version 1: initial login page
+// Version 2: redirect to welcome page welcome.html
+
 function login(event) {
     event.preventDefault();
 
@@ -12,23 +16,22 @@ function login(event) {
         },
         body: JSON.stringify({ username, password }),
     })
-    .then(response => response.text())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
-        try {
-            const jsonData = JSON.parse(data);
-
-            if (jsonData.success) {
-                document.getElementById('message').innerText = `Hello, ${jsonData.username}!`;
-            } else {
-                document.getElementById('message').innerText = 'Authentication failed. Please try again.';
-            }
-        } catch (error) {
-            console.error('Error parsing JSON:', error);
-            document.getElementById('message').innerText = 'An error occurred during login. Please try again.';
+        if (data.success) {
+            // Redirect to the welcome page
+            window.location.href = `/welcome/${data.username}`;
+        } else {
+            document.getElementById('message').innerText = 'Authentication failed. Please check your credentials and try again.';
         }
     })
     .catch(error => {
         console.error('Error during login:', error);
-        document.getElementById('message').innerText = 'An error occurred during login. Please try again.';
+        document.getElementById('message').innerText = `An error occurred during login. Please try again. (${error.message})`;
     });
 }
